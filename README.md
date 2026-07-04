@@ -1,24 +1,45 @@
-# Infrastructure-Failure-Prediction-Model
+# Hard Drive Failure Predictor
+
+Predictive maintenance system built on real telemetry data from Backblaze's data centers.
+The goal is to predict whether a hard drive will fail within the next 30 days using daily 
+SMART diagnostic attributes.
+
+## Problem Statement
+
+Hard drive failures in data centers cause data loss and costly downtime. Backblaze publishes
+daily SMART telemetry for every drive in their fleet. Using this data, we can build a model
+that flags at-risk drives before they fail — giving engineers time to act.
+
 ## Dataset
-### Context
-Each day, Backblaze takes a snapshot of each operational hard drive that includes basic hard drive information (e.g., capacity, failure) and S.M.A.R.T. statistics reported by each drive. This dataset contains data from the first two quarters in 2016.
-### Content
-This dataset contains basic hard drive information and 90 columns or raw and normalized values of 45 different S.M.A.R.T. statistics. Each row represents a daily snapshot of one hard drive.
 
-date: Date in yyyy-mm-dd format
+- **Source:** Backblaze Hard Drive Test Data (2016), via Kaggle
+- **Size:** 3.1 million rows, 95 raw columns
+- **Failures:** 215 out of 3.1 million drive-days (0.006%)
+- **Features:** Daily SMART diagnostic attributes per drive
 
-serial_number: Manufacturer-assigned serial number of the drive
+## Data Preprocessing
 
-model: Manufacturer-assigned model number of the drive
+### Column Reduction
+Dropped 63 columns:
+- 36 columns with >90% null values — entirely unreported attributes
+- 27 normalized SMART columns — Backblaze research confirms raw values
+  are more predictive than manufacturer-normalized equivalents
 
-capacity_bytes: Drive capacity in bytes
+Final shape after dropping: 3.1M rows × 32 columns
 
-failure: Contains a “0” if the drive is OK. Contains a “1” if this is the last day the drive was operational before failing.
+### Null Handling
+Remaining nulls were filled with 0 rather than median or mean.
 
-90 variables that begin with 'smart': Raw and Normalized values for 45 different SMART stats as reported by the given drive
+SMART attributes are counters and flags that increment only when a fault occurs.
+A null value indicates the attribute was never triggered by that drive — 
+functionally identical to 0. Filling with median would incorrectly imply 
+the drive had an average fault count.
 
-Columns: 3.1 Million
-
-Rows: 95
-
-Failure: 215 (0.006%)
+## Project Phases
+- [x] Phase 1 — EDA & Data Cleaning
+- [ ] Phase 2 — Target Label Engineering (30-day failure window)
+- [ ] Phase 3 — Feature Engineering
+- [ ] Phase 4 — Handling Class Imbalance
+- [ ] Phase 5 — Model Training & Comparison
+- [ ] Phase 6 — SHAP Explainability
+- [ ] Phase 7 — Streamlit Dashboard
