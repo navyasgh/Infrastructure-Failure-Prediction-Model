@@ -16,3 +16,7 @@ capacity_bytes: Drive capacity in bytes
 failure: Contains a “0” if the drive is OK. Contains a “1” if this is the last day the drive was operational before failing.
 
 90 variables that begin with 'smart': Raw and Normalized values for 45 different SMART stats as reported by the given drive
+
+Columns: 3.1 Million
+Rows: 95
+Failure: 215 (0.006%)
