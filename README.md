@@ -35,6 +35,11 @@ A null value indicates the attribute was never triggered by that drive —
 functionally identical to 0. Filling with median would incorrectly imply 
 the drive had an average fault count.
 
+### dtype Correction
+12 SMART columns were incorrectly read as object type due to mixed string/float 
+values in the raw CSV. Converted to float64 using pd.to_numeric with errors='coerce', 
+then filled resulting nulls with 0.
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [ ] Phase 2 — Target Label Engineering (30-day failure window)
