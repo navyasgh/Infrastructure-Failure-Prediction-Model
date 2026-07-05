@@ -40,9 +40,18 @@ the drive had an average fault count.
 values in the raw CSV. Converted to float64 using pd.to_numeric with errors='coerce', 
 then filled resulting nulls with 0.
 
+### Duplicate Removal
+120,497 duplicate drive-date combinations were found and removed, keeping the first 
+occurrence. These were true duplicates with identical SMART values — a data collection 
+artifact in the raw dataset.
+
+### Corrupted Column
+`capacity_bytes` was dropped entirely. All values were corrupted near-zero floats 
+(e.g. 1.48e-311) rather than real capacity values (expected ~1e12 for TB-range drives).
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
-- [ ] Phase 2 — Target Label Engineering (30-day failure window)
+- [x] Phase 2 — Target Label Engineering (30-day failure window)
 - [ ] Phase 3 — Feature Engineering
 - [ ] Phase 4 — Handling Class Imbalance
 - [ ] Phase 5 — Model Training & Comparison
