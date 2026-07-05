@@ -49,6 +49,19 @@ artifact in the raw dataset.
 `capacity_bytes` was dropped entirely. All values were corrupted near-zero floats 
 (e.g. 1.48e-311) rather than real capacity values (expected ~1e12 for TB-range drives).
 
+## Evaluation Strategy
+
+Accuracy is not a suitable metric for this dataset. A model predicting 
+'no failure' for every row achieves 99.91% accuracy while missing every 
+failure entirely.
+
+Instead we optimize for **Recall** — minimizing missed failures — because:
+- Missing a failure = data loss, downtime, costly emergency replacement
+- False alarm = unnecessary but cheap drive inspection
+
+Primary metric: **Precision-Recall AUC**
+Secondary metric: **Recall at fixed Precision threshold**
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
