@@ -82,6 +82,18 @@ First row per drive filled with 0 (no previous reading available).
 captures sustained trends rather than transient spikes. min_periods=1 ensures 
 drives with fewer than 7 days of history are still included.
 
+## Handling Class Imbalance
+
+Class weighting was chosen over SMOTE and undersampling because:
+- Undersampling would discard 99.9% of majority class data
+- SMOTE generates synthetic rows that don't represent realistic 
+  drive readings in a time-series context
+- Class weighting penalizes misclassification of failures during 
+  training without modifying the dataset
+
+sklearn's class_weight='balanced' assigns weight ~554x higher to 
+failure rows, reflecting the 1:554 class ratio in the dataset.
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
