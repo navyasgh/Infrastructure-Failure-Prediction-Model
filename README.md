@@ -98,7 +98,7 @@ failure rows, reflecting the 1:554 class ratio in the dataset.
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
 - [x] Phase 3 — Feature Engineering
-- [ ] Phase 4 — Handling Class Imbalance
+- [x] Phase 4 — Handling Class Imbalance
 - [ ] Phase 5 — Model Training & Comparison
 - [ ] Phase 6 — SHAP Explainability
 - [ ] Phase 7 — Streamlit Dashboard
