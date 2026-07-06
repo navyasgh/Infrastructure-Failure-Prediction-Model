@@ -85,7 +85,7 @@ drives with fewer than 7 days of history are still included.
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
-- [ ] Phase 3 — Feature Engineering
+- [x] Phase 3 — Feature Engineering
 - [ ] Phase 4 — Handling Class Imbalance
 - [ ] Phase 5 — Model Training & Comparison
 - [ ] Phase 6 — SHAP Explainability
