@@ -62,6 +62,26 @@ Instead we optimize for **Recall** — minimizing missed failures — because:
 Primary metric: **Precision-Recall AUC**
 Secondary metric: **Recall at fixed Precision threshold**
 
+## Feature Engineering
+
+Three categories of features were engineered from raw SMART attributes:
+
+### Drive Age
+Days since the drive's first appearance in the dataset, calculated per drive 
+using groupby + transform. Captures the bathtub curve effect — older drives 
+are more failure-prone.
+
+### Delta Features
+Day-over-day change in Backblaze's top 5 failure-predictive SMART attributes:
+smart_5, smart_187, smart_188, smart_197, smart_198. A sudden spike in 
+reallocated sectors is more alarming than a stable high value.
+First row per drive filled with 0 (no previous reading available).
+
+### Rolling Averages (7-day)
+7-day rolling mean of the same 5 SMART attributes. Smooths daily noise and 
+captures sustained trends rather than transient spikes. min_periods=1 ensures 
+drives with fewer than 7 days of history are still included.
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
