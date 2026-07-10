@@ -94,7 +94,7 @@ Class weighting was chosen over SMOTE and undersampling because:
 sklearn's class_weight='balanced' assigns weight ~554x higher to 
 failure rows, reflecting the 1:554 class ratio in the dataset.
 
-### Corrupted SMART Columns (dtype Reinterpretation Bug)
+## Corrupted SMART Columns (dtype Reinterpretation Bug)
 
 During evaluation, three model families (Logistic Regression, Random Forest, XGBoost)
 all failed to rank true failures above healthy drives — a symptom of missing feature
