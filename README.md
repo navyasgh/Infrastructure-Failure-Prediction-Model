@@ -94,6 +94,50 @@ Class weighting was chosen over SMOTE and undersampling because:
 sklearn's class_weight='balanced' assigns weight ~554x higher to 
 failure rows, reflecting the 1:554 class ratio in the dataset.
 
+### Corrupted SMART Columns (dtype Reinterpretation Bug)
+
+During evaluation, three model families (Logistic Regression, Random Forest, XGBoost)
+all failed to rank true failures above healthy drives — a symptom of missing feature
+signal rather than a modeling or threshold issue. Investigating the raw SMART columns
+surfaced a second, more subtle instance of the corruption pattern already seen in
+`capacity_bytes`.
+
+**Symptom:** `smart_7`, `smart_188`, `smart_240`, `smart_241`, and `smart_242` showed
+`std == 0.0` alongside mean values on the order of `1e-314` to `1e-316` — subnormal
+floats at the edge of float64 precision, functionally indistinguishable from `0.0` to
+any model or statistical test.
+
+**Root cause:** These values are the result of integer bytes being bit-reinterpreted
+as float64 (a `.view()`-style cast) rather than properly converted (`.astype()`),
+upstream in the source file — before this dataset was ever loaded. Confirmed via
+reversal: `column.values.view(np.int64)` on affected rows recovers plausible integer
+SMART readings (e.g. `4.940656e-324` → `1`, matching the smallest possible subnormal
+double reinterpreted from the integer `1`).
+
+**Why this broke the models:** Unlike ordinary outlier-heavy SMART attributes (e.g.
+`smart_197`, `smart_198`, which are legitimately zero-inflated with rare large spikes),
+these columns collapsed *every* value — healthy and failed drives alike — into the same
+near-zero neighborhood. This erased real variance rather than representing it, making
+the affected columns statistically inert regardless of algorithm.
+
+**Fix:**
+- Detected affected columns programmatically via the signature `std == 0.0` and
+  `0 < |mean| < np.finfo(np.float64).tiny`.
+- Recovered true integer values via NaN-safe bit reinterpretation: non-null rows are
+  passed through `.view(np.int64)`; true nulls (sensor never reported) are left as
+  missing rather than zero-filled, to avoid re-introducing the same signal-flattening
+  problem via a different mechanism.
+- Rebuilt `smart_188_raw_delta` and `smart_188_raw_roll_avg`, since these engineered
+  features were originally computed on corrupted values and inherited `std == 0.0`
+  themselves.
+- `smart_7`, `smart_240`, `smart_241`, `smart_242` were not included in delta/rolling
+  feature engineering (outside Backblaze's top-5 predictive attributes used for that
+  step), so recovery is limited to the raw columns for those four.
+
+**Status:** Corruption confirmed and reversible. Models are being re-trained on
+recovered features; results comparison against the pre-fix baseline (PR-AUC 0.0042,
+0% recall on XGBoost) to follow.
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
