@@ -134,9 +134,6 @@ the affected columns statistically inert regardless of algorithm.
   feature engineering (outside Backblaze's top-5 predictive attributes used for that
   step), so recovery is limited to the raw columns for those four.
 
-**Status:** Corruption confirmed and reversible. Models are being re-trained on
-recovered features; results comparison against the pre-fix baseline (PR-AUC 0.0042,
-0% recall on XGBoost) to follow.
 
 ## Results: Before vs. After Corruption Fix
 
