@@ -142,8 +142,8 @@ recovered features; results comparison against the pre-fix baseline (PR-AUC 0.00
 
 | Model | PR-AUC (Before) | PR-AUC (After) | Recall @ 0.5 (Before) | Recall @ 0.5 (After) |
 |---|---|---|---|---|
-| Logistic Regression | 0.0079 | 0.0077 | — | 0.07 |
-| Random Forest | [fill in] | 0.0106 | 0% | 0% |
+| Logistic Regression | 0.0079 | 0.0077 | 0.07 | 0.07 |
+| Random Forest | 0.0140] | 0.0106 | 0% | 0% |
 | XGBoost | 0.0042 | 0.0061 | 0% | 0.01 |
 
 The fix produced a real but modest improvement in ranking ability (XGBoost PR-AUC
