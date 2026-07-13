@@ -138,6 +138,43 @@ the affected columns statistically inert regardless of algorithm.
 recovered features; results comparison against the pre-fix baseline (PR-AUC 0.0042,
 0% recall on XGBoost) to follow.
 
+## Results: Before vs. After Corruption Fix
+
+| Model | PR-AUC (Before) | PR-AUC (After) | Recall @ 0.5 (Before) | Recall @ 0.5 (After) |
+|---|---|---|---|---|
+| Logistic Regression | 0.0079 | 0.0077 | — | 0.07 |
+| Random Forest | [fill in] | 0.0106 | 0% | 0% |
+| XGBoost | 0.0042 | 0.0061 | 0% | 0.01 |
+
+The fix produced a real but modest improvement in ranking ability (XGBoost PR-AUC
++45%), confirming the corrupted columns were suppressing genuine signal — but XGBoost
+still underperforms the simpler Logistic Regression baseline, indicating the dtype
+bug was one contributing factor, not the sole cause of weak recall. Hyperparameters
+(`max_depth`, `learning_rate` for XGBoost; `n_estimators` for RF) remain at defaults
+and are the next lever to pull.
+
+### Threshold Sweep (Random Forest, Post-Fix)
+
+Default `.predict()` uses a 0.5 cutoff, which is uninformative at this level of class
+imbalance (~0.09% positive rate) — RF flags zero drives as failures at 0.5 despite a
+PR-AUC of 0.0106, the best of the three models. Lowering the threshold surfaces the
+real precision-recall tradeoff:
+
+| Threshold | Precision | Recall | F1 |
+|---|---|---|---|
+| 0.01 | 0.02 | 0.19 | 0.03 |
+| 0.05 | 0.09 | 0.04 | 0.06 |
+| 0.10 | 0.09 | 0.02 | 0.03 |
+
+Given the project's stated priority — a missed failure (data loss, downtime) is far
+costlier than a false alarm (a cheap inspection) — the 0.01 threshold, trading precision
+for substantially higher recall, is the more defensible operating point for this use case.
+
+**Status:** Corruption fixed and verified. Threshold tuning applied to Random Forest;
+XGBoost threshold sweep pending. Next: hyperparameter tuning on Random Forest and
+XGBoost, since PR-AUC gains from the data fix alone did not close the gap to a
+production-usable recall level.
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
