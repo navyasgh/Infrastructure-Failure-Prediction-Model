@@ -250,11 +250,33 @@ robust to that same sparsity.
 **Lift:** Targeting the top 1% highest-risk drives by predicted probability catches
 34.17x more failures than random selection (670 failures in the top 1% of the fleet).
 
+## Drive Age at Failure: A Bathtub Curve
+
+To validate `drive_age_days` as a predictive feature, the distribution of drive age at
+the moment of failure was plotted against a fitted Weibull distribution.
+
+![Drive Age at Failure vs Weibull Distribution](weibull_drive_age.png)
+
+The fit itself is a poor match (shape ≈ 0.99, roughly flat/random-looking) — but the
+underlying histogram tells a more specific story than a single Weibull curve can
+capture: failures cluster in two distinct groups, early (0-25 days) and late
+(90-120 days), with a quiet gap in between. This is consistent with a **bathtub
+curve** pattern from reliability engineering — early failures reflecting
+manufacturing defects or DOA units ("infant mortality"), and late failures
+reflecting genuine wear-out from age, rather than one continuous failure process.
+
+A single Weibull distribution can't represent two competing failure mechanisms at
+once, which is exactly why the fit looks unconvincing — the flat shape parameter is
+effectively averaging across two different regimes rather than describing either one
+well. This bimodality further supports `drive_age_days` as a meaningful feature: age
+alone doesn't predict failure risk uniformly, it predicts risk in two separate,
+identifiable windows.
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
 - [x] Phase 3 — Feature Engineering
 - [x] Phase 4 — Handling Class Imbalance
-- [ ] Phase 5 — Model Training & Comparison
+- [x] Phase 5 — Model Training & Comparison
 - [ ] Phase 6 — SHAP Explainability
 - [ ] Phase 7 — Streamlit Dashboard
