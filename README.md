@@ -195,6 +195,61 @@ volume a data center engineering team could realistically act on. The right thre
 ultimately depends on the real-world cost ratio between one inspection and one missed
 failure — a business decision this model informs but does not make unilaterally.
 
+## Final Model Configuration
+
+Hyperparameters were tuned using `RandomizedSearchCV` with `TimeSeriesSplit` (5 folds)
+rather than standard K-Fold, since random shuffling would let rows from the same drive
+leak across train/validation splits given the temporal structure of the data. Search
+was scored on `average_precision` (PR-AUC) rather than accuracy or F1 — PR-AUC is
+threshold-independent, avoiding the distortion that comes from evaluating candidates
+at a fixed 0.5 cutoff on data this imbalanced (~0.09% positive rate).
+
+**Best parameters found (20 iterations, 3-8 minute runtime):**
+
+| Parameter | Value | Rationale |
+|---|---|---|
+| `learning_rate` | 0.01 | Small, careful updates per tree — a high default learning rate overcorrects toward the dominant majority pattern before the model can refine around the rare failure signal |
+| `n_estimators` | 200 | More trees compensate for the smaller learning rate, giving the model enough iterations to converge |
+| `max_depth` | 5 | Close to XGBoost's default (6); tree depth was not the main lever for this dataset |
+| `min_child_weight` | 1 | Allows splits on small leaf sizes, needed given how rare positive examples are |
+| `scale_pos_weight` | 1512.89 | Computed directly from the training set's class ratio (negative/positive), matching the manually-derived value used in the original run |
+
+**Result:** PR-AUC improved from 0.0061 (post-corruption-fix, default hyperparameters)
+to 0.0237 on the held-out test set — a ~3.9x improvement, and the best PR-AUC across
+all models and phases of this project.
+
+**Operating threshold:** See "Choosing an Operating Threshold" above. Recommended
+threshold of [0.3 or 0.4] balances recall against a realistically actionable
+inspection volume, rather than optimizing recall in isolation.
+
+## Final Model Selection
+
+Both XGBoost and Random Forest were tuned via `RandomizedSearchCV` (`TimeSeriesSplit`,
+scored on `average_precision`). Despite boosting's theoretical advantage of sequential
+error-correction — expected to help more on a signal this rare — **tuned Random Forest
+outperformed tuned XGBoost on every held-out metric**:
+
+| Model | PR-AUC | ROC-AUC | Best Params |
+|---|---|---|---|
+| XGBoost (tuned) | 0.0237 | 0.6871 | learning_rate=0.01, n_estimators=200, max_depth=5 |
+| **Random Forest (tuned)** | **0.0421** | **0.7633** | max_depth=3, n_estimators=100 |
+
+This is a useful reminder that architecture-based intuition doesn't always hold under
+extreme class imbalance — RF's shallow, averaged trees generalized better here than
+XGBoost's sequential refinement, possibly because boosting's sequential corrections
+had more opportunity to overfit to noise in the small number of positive examples,
+while RF's independently-trained, heavily regularized (max_depth=3) trees were more
+robust to that same sparsity.
+
+**Final model: Random Forest**, operating threshold **0.5**.
+
+| Threshold | Precision | Recall | Drives Flagged | % of Fleet | Failures Caught |
+|---|---|---|---|---|---|
+| 0.5 | 0.73% | 39.8% | 106,706 | 5.8% | 781 / 1,961 |
+
+**Lift:** Targeting the top 1% highest-risk drives by predicted probability catches
+34.17x more failures than random selection (670 failures in the top 1% of the fleet).
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
