@@ -255,7 +255,7 @@ robust to that same sparsity.
 To validate `drive_age_days` as a predictive feature, the distribution of drive age at
 the moment of failure was plotted against a fitted Weibull distribution.
 
-![Drive Age at Failure vs Weibull Distribution](weibull_drive_age.png)
+![Drive Age at Failure vs Weibull Distribution](images/weibull_drive_age.png)
 
 The fit itself is a poor match (shape ≈ 0.99, roughly flat/random-looking) — but the
 underlying histogram tells a more specific story than a single Weibull curve can
