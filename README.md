@@ -172,6 +172,29 @@ XGBoost threshold sweep pending. Next: hyperparameter tuning on Random Forest an
 XGBoost, since PR-AUC gains from the data fix alone did not close the gap to a
 production-usable recall level.
 
+## Choosing an Operating Threshold
+
+PR-AUC measures ranking quality across all thresholds, but deploying a model requires
+picking one specific cutoff — and the "best" recall number in isolation can be
+misleading. At threshold 0.1, the tuned XGBoost model achieves 75% recall, but flags
+1,132,009 of 1,850,717 test rows (61% of the fleet) as at-risk to catch 1,474 true
+failures. Inspecting 61% of a data center's fleet is not operationally different from
+inspecting nearly everything — the model would provide little practical triage value
+despite its high recall figure.
+
+| Threshold | Recall | Drives Flagged | % of Fleet | True Failures Caught |
+|---|---|---|---|---|
+| 0.1 | 75.2% | 1,132,009 | 61.2% | 1,474 |
+| 0.2 | 57.8% | 456,758 | 24.7% | 1,133 |
+| 0.3 | 44.8% | 228,915 | 12.4% | 878 |
+| 0.4 | 33.7% | 106,198 | 5.7% | 660 |
+| 0.5 | 22.9% | 43,921 | 2.4% | 449 |
+
+Recommended operating point: **[0.3 or 0.4]**, trading some recall for an inspection
+volume a data center engineering team could realistically act on. The right threshold
+ultimately depends on the real-world cost ratio between one inspection and one missed
+failure — a business decision this model informs but does not make unilaterally.
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
