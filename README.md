@@ -73,8 +73,23 @@ are more failure-prone.
 
 ### Delta Features
 Day-over-day change in Backblaze's top 5 failure-predictive SMART attributes:
-smart_5, smart_187, smart_188, smart_197, smart_198. A sudden spike in 
-reallocated sectors is more alarming than a stable high value.
+smart_5, smart_187, smart_188, smart_197, smart_198. 
+#### smart_5: Reallocated sectors count
+Tracks number of bad sectors that have been replaced by spare sectors.
+
+#### smart_187: Reported uncorrectable errors
+Counts uncorrectable read errors using hardware ECC. If this value > 0, then the drive is scheduled for proactive replacement.
+
+#### smart_188: Command Timeout
+Counts number of aborted operations because the hard drive failed to respond to a system command within its alloted time budget
+
+#### smart_197: Current pending sector count
+Drives use this to flag sectors that are unstable and waiting for a successful read or write.
+
+#### smart_198: Offline uncorrectable sector count
+Counts errors when attempting to read/write a sector, often indicating physical degradation.
+
+A sudden spike in reallocated sectors is more alarming than a stable high value.
 First row per drive filled with 0 (no previous reading available).
 
 ### Rolling Averages (7-day)
