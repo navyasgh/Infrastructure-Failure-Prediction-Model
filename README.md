@@ -287,11 +287,50 @@ well. This bimodality further supports `drive_age_days` as a meaningful feature:
 alone doesn't predict failure risk uniformly, it predicts risk in two separate,
 identifiable windows.
 
+## SHAP: A Bathtub Curve?
+
+The Weibull/age-histogram analysis (above) showed failures clustering at both young
+(0-25 days) and old (90-120 days) drive ages. A natural next question: does
+`drive_age_days` explain both clusters equally in the model itself?
+
+The SHAP summary plot ranks `drive_age_days` among the top 6 most influential features
+overall, and its dots show a striking pattern — young (blue) values dominate the
+positive-SHAP side (pushing toward failure), while red (old) values lean toward the
+negative side. Taken at face value, this looked contradictory: the actual failure data
+skews toward *old* ages (median 99 days), yet the model's age feature seemed to favor
+young ages when pushing predictions toward failure.
+
+![SHAP summary plot](images/shap_summary.png)
+
+This discrepancy was worth digging into rather than dismissing — see below.
+
+## Digging Deeper: Decomposing the Bathtub Curve
+
+A SHAP dependence plot for `drive_age_days` alone resolves the apparent contradiction.
+
+![SHAP dependence: drive_age_days](images/shap_dependence_age.png)
+
+`drive_age_days`'s own SHAP contribution is **positive** for young drives (up to +0.01)
+but **negative** for old drives — the opposite sign from what a simple "age drives both
+clusters" story would predict. Coloring the plot by `smart_197_raw` (Current Pending
+Sector Count) explains why: within the old-age cluster, drives with high
+`smart_197_raw` show the most negative age-SHAP values, while `smart_197_raw` itself
+carries a strong positive SHAP contribution in the overall summary plot.
+
+**Interpretation:** the model attributes old-age failure risk primarily to
+`smart_197_raw`'s accumulated damage rather than to `drive_age_days` directly. Since
+sector damage naturally accumulates over time, the two features are correlated — this
+is a statement about how the model splits credit between correlated features, not a
+definitive causal claim that age is irrelevant to old-age failures. It does suggest,
+however, that the young-age and old-age failure clusters are driven by meaningfully
+different mechanisms in the model: age itself for early-life failures, physical wear
+indicators for late-life failures.
+
 ## Project Phases
 - [x] Phase 1 — EDA & Data Cleaning
 - [x] Phase 2 — Target Label Engineering (30-day failure window)
 - [x] Phase 3 — Feature Engineering
 - [x] Phase 4 — Handling Class Imbalance
 - [x] Phase 5 — Model Training & Comparison
-- [ ] Phase 6 — SHAP Explainability
+- [x] Phase 6 — SHAP Explainability
 - [ ] Phase 7 — Streamlit Dashboard
